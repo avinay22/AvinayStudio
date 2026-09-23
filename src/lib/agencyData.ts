@@ -32,6 +32,45 @@ function setLocal<T>(key: string, val: T): void {
   } catch (e) {}
 }
 
+// ----------------- IMAGE UPLOADER -----------------
+export async function uploadProjectImage(file: File): Promise<string> {
+  const ext = file.name.split('.').pop() || 'jpg';
+  const cleanFileName = `proj-${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${ext}`;
+
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase.storage
+        .from('portfolio')
+        .upload(cleanFileName, file, {
+          cacheControl: '3600',
+          upsert: true,
+        });
+
+      if (!error && data) {
+        const { data: urlData } = supabase.storage
+          .from('portfolio')
+          .getPublicUrl(cleanFileName);
+
+        if (urlData?.publicUrl) {
+          return urlData.publicUrl;
+        }
+      } else if (error) {
+        console.warn('Supabase storage upload returned error (fallback to local Data URL):', error.message);
+      }
+    } catch (err) {
+      console.warn('Storage upload error, using local Data URL fallback:', err);
+    }
+  }
+
+  // Resilient fallback: read file to Data URL
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (err) => reject(err);
+    reader.readAsDataURL(file);
+  });
+}
+
 // ----------------- PROJECTS -----------------
 export async function fetchProjects(): Promise<Project[]> {
   if (isSupabaseConfigured) {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import {
   FolderGit2,
@@ -11,9 +11,11 @@ import {
   Sparkles,
   Check,
   X,
-  Image as ImageIcon
+  Upload,
+  Image as ImageIcon,
+  Loader2
 } from 'lucide-react';
-import { fetchProjects, saveProject, deleteProject } from '@/lib/agencyData';
+import { fetchProjects, saveProject, deleteProject, uploadProjectImage } from '@/lib/agencyData';
 import { Project } from '@/types';
 
 export default function AdminProjectsPage() {
@@ -21,11 +23,13 @@ export default function AdminProjectsPage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     title: '',
     client_name: '',
-    category: 'E-Commerce',
+    category: 'E-Commerce & Retail',
     description: '',
     image_url: '/images/hero-laptop.jpg',
     live_url: '',
@@ -50,7 +54,7 @@ export default function AdminProjectsPage() {
     setFormData({
       title: '',
       client_name: '',
-      category: 'E-Commerce',
+      category: 'E-Commerce & Retail',
       description: '',
       image_url: '/images/hero-laptop.jpg',
       live_url: '',
@@ -81,6 +85,22 @@ export default function AdminProjectsPage() {
     if (!confirm('Are you sure you want to delete this project?')) return;
     await deleteProject(id);
     await loadProjects();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const uploadedUrl = await uploadProjectImage(file);
+      setFormData((prev) => ({ ...prev, image_url: uploadedUrl }));
+    } catch (err) {
+      console.error('Failed to upload image:', err);
+      alert('Could not upload image. Please try another file.');
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -117,7 +137,7 @@ export default function AdminProjectsPage() {
             Manage Portfolio Projects
           </h1>
           <p className="text-xs text-[#B8B3AB] mt-1">
-            Add, update, or remove case studies showcased on your public website.
+            Add new projects, upload project photos, or update client showcase cards.
           </p>
         </div>
 
@@ -225,7 +245,7 @@ export default function AdminProjectsPage() {
       {/* Add / Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="relative w-full max-w-2xl bg-[#0F0F14] border border-[#D4C5B9]/20 rounded-2xl p-6 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className="relative w-full max-w-2xl bg-[#0F0F14] border border-[#D4C5B9]/20 rounded-2xl p-6 sm:p-8 shadow-2xl max-h-[92vh] overflow-y-auto">
             <button
               onClick={() => setIsModalOpen(false)}
               className="absolute top-5 right-5 text-[#75716B] hover:text-[#F5F2ED]"
@@ -234,13 +254,97 @@ export default function AdminProjectsPage() {
             </button>
 
             <h2 className="text-2xl font-bold text-[#F5F2ED] mb-1 font-['Outfit']">
-              {editingProject ? 'Edit Project' : 'Add New Portfolio Project'}
+              {editingProject ? 'Edit Project Details' : 'Add New Portfolio Project'}
             </h2>
             <p className="text-xs text-[#B8B3AB] mb-6">
-              Enter case study details to display on the public showcase.
+              Enter case study details, upload photo or choose presets.
             </p>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              
+              {/* Photo Upload Zone (NEW) */}
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-[#DFC08F] font-bold mb-2">
+                  Project Photo / Cover Image *
+                </label>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+                  {/* Photo Preview */}
+                  <div className="sm:col-span-5 relative aspect-[16/10] w-full rounded-xl overflow-hidden border border-[#D4C5B9]/20 bg-[#050508]">
+                    <Image
+                      src={formData.image_url || '/images/hero-laptop.jpg'}
+                      alt="Project preview"
+                      fill
+                      className="object-cover"
+                    />
+                    {uploadingImage && (
+                      <div className="absolute inset-0 bg-black/75 flex flex-col items-center justify-center gap-2 text-xs text-[#DFC08F]">
+                        <Loader2 className="w-6 h-6 animate-spin" />
+                        <span>Uploading photo...</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Upload Controls */}
+                  <div className="sm:col-span-7 space-y-3">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+
+                    <button
+                      type="button"
+                      disabled={uploadingImage}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full py-3 px-4 rounded-xl border-2 border-dashed border-[#C5A880]/40 hover:border-[#DFC08F] bg-[#14141C] hover:bg-[#1A1A24] text-xs font-bold text-[#DFC08F] flex items-center justify-center gap-2 transition-all"
+                    >
+                      <Upload className="w-4 h-4" />
+                      <span>{uploadingImage ? 'Uploading...' : 'Upload Photo from Device (JPG/PNG)'}</span>
+                    </button>
+
+                    <div>
+                      <div className="text-[11px] text-[#75716B] mb-1">Or paste custom image link / use preset:</div>
+                      <input
+                        type="text"
+                        value={formData.image_url}
+                        onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                        placeholder="https://... or /images/..."
+                        className="w-full px-3 py-2 rounded-lg bg-[#14141A] border border-[#D4C5B9]/15 text-[#F5F2ED] text-xs focus:outline-none focus:border-[#DFC08F]"
+                      />
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 text-[10px] text-[#75716B]">
+                      <span>Quick presets:</span>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, image_url: '/images/maa-radio-store.png' })}
+                        className="underline text-[#D4C5B9] hover:text-[#DFC08F]"
+                      >
+                        Maa Radio
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, image_url: '/images/hero-laptop.jpg' })}
+                        className="underline text-[#D4C5B9] hover:text-[#DFC08F]"
+                      >
+                        Laptop
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, image_url: '/images/about-avinay.png' })}
+                        className="underline text-[#D4C5B9] hover:text-[#DFC08F]"
+                      >
+                        Studio
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Title & Client */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs uppercase tracking-wider text-[#B8B3AB] font-semibold mb-1.5">
@@ -271,6 +375,7 @@ export default function AdminProjectsPage() {
                 </div>
               </div>
 
+              {/* Category & Results Metric */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs uppercase tracking-wider text-[#B8B3AB] font-semibold mb-1.5">
@@ -304,6 +409,7 @@ export default function AdminProjectsPage() {
                 </div>
               </div>
 
+              {/* Description */}
               <div>
                 <label className="block text-xs uppercase tracking-wider text-[#B8B3AB] font-semibold mb-1.5">
                   Project Description *
@@ -318,44 +424,7 @@ export default function AdminProjectsPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-xs uppercase tracking-wider text-[#B8B3AB] font-semibold mb-1.5">
-                  Image Path / URL
-                </label>
-                <input
-                  type="text"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#14141A] border border-[#D4C5B9]/15 text-[#F5F2ED] text-xs focus:outline-none focus:border-[#DFC08F]"
-                />
-                <div className="flex gap-2 mt-2 text-[10px] text-[#75716B]">
-                  <span>Presets:</span>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, image_url: '/images/maa-radio-store.png' })}
-                    className="underline hover:text-[#DFC08F]"
-                  >
-                    Maa Radio Store
-                  </button>
-                  <span>•</span>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, image_url: '/images/hero-laptop.jpg' })}
-                    className="underline hover:text-[#DFC08F]"
-                  >
-                    Laptop Hero
-                  </button>
-                  <span>•</span>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, image_url: '/images/about-avinay.png' })}
-                    className="underline hover:text-[#DFC08F]"
-                  >
-                    Founder Studio
-                  </button>
-                </div>
-              </div>
-
+              {/* Live URL & Tags */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs uppercase tracking-wider text-[#B8B3AB] font-semibold mb-1.5">
@@ -384,6 +453,7 @@ export default function AdminProjectsPage() {
                 </div>
               </div>
 
+              {/* Featured Checkbox */}
               <div className="flex items-center gap-3 pt-2">
                 <input
                   type="checkbox"
@@ -397,6 +467,7 @@ export default function AdminProjectsPage() {
                 </label>
               </div>
 
+              {/* Modal Buttons */}
               <div className="pt-4 border-t border-[#D4C5B9]/10 flex items-center justify-end gap-3">
                 <button
                   type="button"
@@ -407,7 +478,8 @@ export default function AdminProjectsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-[#050505] bg-[#DFC08F] hover:bg-[#E8DFD8] shadow-md"
+                  disabled={uploadingImage}
+                  className="px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-[#050505] bg-[#DFC08F] hover:bg-[#E8DFD8] shadow-md disabled:opacity-50"
                 >
                   {editingProject ? 'Save Changes' : 'Create Project'}
                 </button>
