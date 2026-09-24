@@ -2,6 +2,16 @@ import { supabase, isSupabaseConfigured } from './supabase';
 import { Project, Client, Payment, Invoice } from '@/types';
 import { INITIAL_PROJECTS, INITIAL_CLIENTS, INITIAL_PAYMENTS, INITIAL_INVOICES } from '@/data/initialData';
 
+// Trigger automatic background sync to VS Code local file (initialData.ts)
+export function triggerLocalVsCodeSync() {
+  if (typeof window !== 'undefined') {
+    fetch('/api/sync', { method: 'POST' })
+      .then((res) => res.json())
+      .then((res) => console.log('⚡ Two-way sync to VS Code initialData.ts completed:', res))
+      .catch((err) => console.warn('Sync to local VS Code file background notification:', err));
+  }
+}
+
 // Check if string is a valid UUID
 function isValidUUID(str?: string): boolean {
   if (!str) return false;
@@ -56,7 +66,7 @@ export async function fetchProjects(): Promise<Project[]> {
 
       if (error) {
         console.error('Supabase fetch projects error:', error.message);
-      } else if (data && data.length > 0) {
+      } else if (data) {
         return data as Project[];
       }
     } catch (err) {
@@ -87,6 +97,7 @@ export async function saveProject(project: Partial<Project> & { id?: string }): 
   }
 
   if (isSupabaseConfigured) {
+    let result: Project;
     if (isExistingUUID) {
       const { data, error } = await supabase
         .from('projects')
@@ -99,7 +110,7 @@ export async function saveProject(project: Partial<Project> & { id?: string }): 
         console.error('Supabase project update error:', error.message);
         throw new Error(`Supabase error: ${error.message}`);
       }
-      return data as Project;
+      result = data as Project;
     } else {
       const { data, error } = await supabase
         .from('projects')
@@ -111,8 +122,12 @@ export async function saveProject(project: Partial<Project> & { id?: string }): 
         console.error('Supabase project insert error:', error.message);
         throw new Error(`Supabase error: ${error.message}`);
       }
-      return data as Project;
+      result = data as Project;
     }
+
+    // Trigger two-way sync to VS Code local file
+    triggerLocalVsCodeSync();
+    return result;
   }
 
   throw new Error('Supabase is not configured. Please check your .env.local file.');
@@ -125,8 +140,10 @@ export async function deleteProject(id: string): Promise<boolean> {
       console.error('Supabase delete error:', error.message);
       throw new Error(`Supabase delete error: ${error.message}`);
     }
+    triggerLocalVsCodeSync();
     return true;
   }
+  triggerLocalVsCodeSync();
   return true;
 }
 
@@ -141,7 +158,7 @@ export async function fetchClients(): Promise<Client[]> {
 
       if (error) {
         console.error('Supabase clients fetch error:', error.message);
-      } else if (data && data.length > 0) {
+      } else if (data) {
         return data as Client[];
       }
     } catch (err) {
@@ -171,6 +188,7 @@ export async function saveClient(client: Partial<Client> & { id?: string }): Pro
   }
 
   if (isSupabaseConfigured) {
+    let result: Client;
     if (isExistingUUID) {
       const { data, error } = await supabase
         .from('clients')
@@ -183,7 +201,7 @@ export async function saveClient(client: Partial<Client> & { id?: string }): Pro
         console.error('Supabase client update error:', error.message);
         throw new Error(`Supabase error: ${error.message}`);
       }
-      return data as Client;
+      result = data as Client;
     } else {
       const { data, error } = await supabase
         .from('clients')
@@ -195,11 +213,28 @@ export async function saveClient(client: Partial<Client> & { id?: string }): Pro
         console.error('Supabase client insert error:', error.message);
         throw new Error(`Supabase error: ${error.message}`);
       }
-      return data as Client;
+      result = data as Client;
     }
+
+    triggerLocalVsCodeSync();
+    return result;
   }
 
   throw new Error('Supabase is not configured.');
+}
+
+export async function deleteClient(id: string): Promise<boolean> {
+  if (isSupabaseConfigured && isValidUUID(id)) {
+    const { error } = await supabase.from('clients').delete().eq('id', id);
+    if (error) {
+      console.error('Supabase delete client error:', error.message);
+      throw new Error(`Supabase delete client error: ${error.message}`);
+    }
+    triggerLocalVsCodeSync();
+    return true;
+  }
+  triggerLocalVsCodeSync();
+  return true;
 }
 
 // ----------------- PAYMENTS -----------------
@@ -213,7 +248,7 @@ export async function fetchPayments(): Promise<Payment[]> {
 
       if (error) {
         console.error('Supabase payments fetch error:', error.message);
-      } else if (data && data.length > 0) {
+      } else if (data) {
         return data as Payment[];
       }
     } catch (err) {
@@ -242,6 +277,7 @@ export async function savePayment(payment: Partial<Payment> & { id?: string }): 
   }
 
   if (isSupabaseConfigured) {
+    let result: Payment;
     if (isExistingUUID) {
       const { data, error } = await supabase
         .from('payments')
@@ -254,7 +290,7 @@ export async function savePayment(payment: Partial<Payment> & { id?: string }): 
         console.error('Supabase payment update error:', error.message);
         throw new Error(`Supabase error: ${error.message}`);
       }
-      return data as Payment;
+      result = data as Payment;
     } else {
       const { data, error } = await supabase
         .from('payments')
@@ -266,11 +302,28 @@ export async function savePayment(payment: Partial<Payment> & { id?: string }): 
         console.error('Supabase payment insert error:', error.message);
         throw new Error(`Supabase error: ${error.message}`);
       }
-      return data as Payment;
+      result = data as Payment;
     }
+
+    triggerLocalVsCodeSync();
+    return result;
   }
 
   throw new Error('Supabase is not configured.');
+}
+
+export async function deletePayment(id: string): Promise<boolean> {
+  if (isSupabaseConfigured && isValidUUID(id)) {
+    const { error } = await supabase.from('payments').delete().eq('id', id);
+    if (error) {
+      console.error('Supabase delete payment error:', error.message);
+      throw new Error(`Supabase delete payment error: ${error.message}`);
+    }
+    triggerLocalVsCodeSync();
+    return true;
+  }
+  triggerLocalVsCodeSync();
+  return true;
 }
 
 // ----------------- INVOICES -----------------
@@ -284,7 +337,7 @@ export async function fetchInvoices(): Promise<Invoice[]> {
 
       if (error) {
         console.error('Supabase invoices fetch error:', error.message);
-      } else if (data && data.length > 0) {
+      } else if (data) {
         return data as Invoice[];
       }
     } catch (err) {
@@ -318,6 +371,7 @@ export async function saveInvoice(invoice: Partial<Invoice> & { id?: string }): 
   }
 
   if (isSupabaseConfigured) {
+    let result: Invoice;
     if (isExistingUUID) {
       const { data, error } = await supabase
         .from('invoices')
@@ -330,7 +384,7 @@ export async function saveInvoice(invoice: Partial<Invoice> & { id?: string }): 
         console.error('Supabase invoice update error:', error.message);
         throw new Error(`Supabase error: ${error.message}`);
       }
-      return data as Invoice;
+      result = data as Invoice;
     } else {
       const { data, error } = await supabase
         .from('invoices')
@@ -342,9 +396,26 @@ export async function saveInvoice(invoice: Partial<Invoice> & { id?: string }): 
         console.error('Supabase invoice insert error:', error.message);
         throw new Error(`Supabase error: ${error.message}`);
       }
-      return data as Invoice;
+      result = data as Invoice;
     }
+
+    triggerLocalVsCodeSync();
+    return result;
   }
 
   throw new Error('Supabase is not configured.');
+}
+
+export async function deleteInvoice(id: string): Promise<boolean> {
+  if (isSupabaseConfigured && isValidUUID(id)) {
+    const { error } = await supabase.from('invoices').delete().eq('id', id);
+    if (error) {
+      console.error('Supabase delete invoice error:', error.message);
+      throw new Error(`Supabase delete invoice error: ${error.message}`);
+    }
+    triggerLocalVsCodeSync();
+    return true;
+  }
+  triggerLocalVsCodeSync();
+  return true;
 }

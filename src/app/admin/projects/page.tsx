@@ -13,7 +13,8 @@ import {
   X,
   Upload,
   Image as ImageIcon,
-  Loader2
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 import { fetchProjects, saveProject, deleteProject, uploadProjectImage } from '@/lib/agencyData';
 import { Project } from '@/types';
@@ -24,6 +25,7 @@ export default function AdminProjectsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
@@ -40,9 +42,15 @@ export default function AdminProjectsPage() {
 
   const loadProjects = async () => {
     setLoading(true);
-    const data = await fetchProjects();
-    setProjects(data);
-    setLoading(false);
+    setActionError(null);
+    try {
+      const data = await fetchProjects();
+      setProjects(data);
+    } catch (err: any) {
+      setActionError(err.message || 'Error loading projects from Supabase');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -51,6 +59,7 @@ export default function AdminProjectsPage() {
 
   const handleOpenAdd = () => {
     setEditingProject(null);
+    setActionError(null);
     setFormData({
       title: '',
       client_name: '',
@@ -67,6 +76,7 @@ export default function AdminProjectsPage() {
 
   const handleOpenEdit = (proj: Project) => {
     setEditingProject(proj);
+    setActionError(null);
     setFormData({
       title: proj.title,
       client_name: proj.client_name,
@@ -81,10 +91,14 @@ export default function AdminProjectsPage() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this project?')) return;
-    await deleteProject(id);
-    await loadProjects();
+  const handleDelete = async (id: string, title: string) => {
+    if (!confirm(`Are you sure you want to permanently delete "${title}"?`)) return;
+    try {
+      await deleteProject(id);
+      await loadProjects();
+    } catch (err: any) {
+      alert(`Delete Error: ${err.message}. Please check Supabase permissions.`);
+    }
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -105,23 +119,28 @@ export default function AdminProjectsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const tagArray = formData.tags.split(',').map((t) => t.trim()).filter(Boolean);
+    setActionError(null);
+    try {
+      const tagArray = formData.tags.split(',').map((t) => t.trim()).filter(Boolean);
 
-    await saveProject({
-      id: editingProject ? editingProject.id : undefined,
-      title: formData.title,
-      client_name: formData.client_name,
-      category: formData.category,
-      description: formData.description,
-      image_url: formData.image_url,
-      live_url: formData.live_url,
-      tags: tagArray,
-      results_metric: formData.results_metric,
-      featured: formData.featured,
-    });
+      await saveProject({
+        id: editingProject ? editingProject.id : undefined,
+        title: formData.title,
+        client_name: formData.client_name,
+        category: formData.category,
+        description: formData.description,
+        image_url: formData.image_url,
+        live_url: formData.live_url,
+        tags: tagArray,
+        results_metric: formData.results_metric,
+        featured: formData.featured,
+      });
 
-    setIsModalOpen(false);
-    await loadProjects();
+      setIsModalOpen(false);
+      await loadProjects();
+    } catch (err: any) {
+      setActionError(err.message || 'Failed to save to Supabase');
+    }
   };
 
   return (
@@ -131,13 +150,13 @@ export default function AdminProjectsPage() {
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#14141C] border border-[#C5A880]/30 text-xs font-semibold text-[#DFC08F] mb-2">
             <FolderGit2 className="w-3.5 h-3.5" />
-            Portfolio CMS
+            Supabase Portfolio CMS
           </div>
           <h1 className="text-3xl font-extrabold text-[#F5F2ED] font-['Outfit']">
             Manage Portfolio Projects
           </h1>
           <p className="text-xs text-[#B8B3AB] mt-1">
-            Add new projects, upload project photos, or update client showcase cards.
+            Direct real-time two-way synchronization with your Supabase database and public website.
           </p>
         </div>
 
@@ -149,6 +168,16 @@ export default function AdminProjectsPage() {
           Add New Project
         </button>
       </div>
+
+      {actionError && (
+        <div className="p-4 rounded-xl bg-[#221212] border border-[#552222] text-xs text-[#E8DFD8] flex items-start gap-3">
+          <AlertCircle className="w-4 h-4 text-[#DFC08F] shrink-0 mt-0.5" />
+          <div>
+            <div className="font-bold text-[#DFC08F]">Database Notice:</div>
+            <div>{actionError}</div>
+          </div>
+        </div>
+      )}
 
       {/* Projects Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -230,7 +259,7 @@ export default function AdminProjectsPage() {
                   <Edit className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => handleDelete(proj.id)}
+                  onClick={() => handleDelete(proj.id, proj.title)}
                   className="p-2 rounded-lg bg-[#14141C] text-[#75716B] hover:text-[#E8DFD8] hover:bg-[#201515] transition-colors"
                   title="Delete Project"
                 >
@@ -257,19 +286,18 @@ export default function AdminProjectsPage() {
               {editingProject ? 'Edit Project Details' : 'Add New Portfolio Project'}
             </h2>
             <p className="text-xs text-[#B8B3AB] mb-6">
-              Enter case study details, upload photo or choose presets.
+              Enter case study details. Changes will save directly to Supabase and show immediately on your website.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5">
               
-              {/* Photo Upload Zone (NEW) */}
+              {/* Photo Upload Zone */}
               <div>
                 <label className="block text-xs uppercase tracking-wider text-[#DFC08F] font-bold mb-2">
                   Project Photo / Cover Image *
                 </label>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
-                  {/* Photo Preview */}
                   <div className="sm:col-span-5 relative aspect-[16/10] w-full rounded-xl overflow-hidden border border-[#D4C5B9]/20 bg-[#050508]">
                     <Image
                       src={formData.image_url || '/images/hero-laptop.jpg'}
@@ -285,7 +313,6 @@ export default function AdminProjectsPage() {
                     )}
                   </div>
 
-                  {/* Upload Controls */}
                   <div className="sm:col-span-7 space-y-3">
                     <input
                       ref={fileInputRef}
@@ -306,7 +333,7 @@ export default function AdminProjectsPage() {
                     </button>
 
                     <div>
-                      <div className="text-[11px] text-[#75716B] mb-1">Or paste custom image link / use preset:</div>
+                      <div className="text-[11px] text-[#75716B] mb-1">Image URL / Path:</div>
                       <input
                         type="text"
                         value={formData.image_url}
@@ -314,31 +341,6 @@ export default function AdminProjectsPage() {
                         placeholder="https://... or /images/..."
                         className="w-full px-3 py-2 rounded-lg bg-[#14141A] border border-[#D4C5B9]/15 text-[#F5F2ED] text-xs focus:outline-none focus:border-[#DFC08F]"
                       />
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 text-[10px] text-[#75716B]">
-                      <span>Quick presets:</span>
-                      <button
-                        type="button"
-                        onClick={() => setFormData({ ...formData, image_url: '/images/maa-radio-store.png' })}
-                        className="underline text-[#D4C5B9] hover:text-[#DFC08F]"
-                      >
-                        Maa Radio
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setFormData({ ...formData, image_url: '/images/hero-laptop.jpg' })}
-                        className="underline text-[#D4C5B9] hover:text-[#DFC08F]"
-                      >
-                        Laptop
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setFormData({ ...formData, image_url: '/images/about-avinay.png' })}
-                        className="underline text-[#D4C5B9] hover:text-[#DFC08F]"
-                      >
-                        Studio
-                      </button>
                     </div>
                   </div>
                 </div>

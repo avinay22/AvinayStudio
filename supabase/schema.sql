@@ -146,18 +146,6 @@ values
     '4.9 Star Brand Reputation',
     true,
     3
-),
-(
-    'Style Hub Fashion',
-    'Style Hub Apparel',
-    'Fashion & Apparel',
-    'Dynamic trend lookbook with instant social media shopping redirection and influencer-grade mobile speed.',
-    '/images/hero-laptop.jpg',
-    '#',
-    array['Fashion', 'Mobile First', 'Fast Commerce'],
-    '2.4x Higher Footfall',
-    true,
-    4
 )
 on conflict do nothing;
 
@@ -166,8 +154,7 @@ insert into public.clients (business_name, contact_name, phone, email, location,
 values
 ('Maa Radio Mart', 'Rajesh Sharma', '+91 98765 43210', 'maaradiomart@gmail.com', 'Gogamukh, Assam', 'Advanced Online Store', 'Active', 44999, 'Flagship store portal + catalog sync'),
 ('Sharma Medicos', 'Dr. D. Sharma', '+91 94350 12345', 'sharmamedicos@gmail.com', 'Dhemaji, Assam', 'Business Website', 'Active', 18999, 'Pharmacy web presence & SEO ranking'),
-('The Beauty Salon & Boutique', 'Priyanka Borah', '+91 70020 98765', 'thebeautysalon@gmail.com', 'North Lakhimpur, Assam', 'Business Website', 'Active', 16999, 'Bridal booking gallery'),
-('Style Hub Fashion', 'Bikash Das', '+91 88760 55432', 'stylehub.fashion@gmail.com', 'Guwahati, Assam', 'Basic Website', 'Completed', 7999, 'Fast single-page storefront')
+('The Beauty Salon & Boutique', 'Priyanka Borah', '+91 70020 98765', 'thebeautysalon@gmail.com', 'North Lakhimpur, Assam', 'Business Website', 'Active', 16999, 'Bridal booking gallery')
 on conflict do nothing;
 
 -- SEED PAYMENTS
@@ -175,6 +162,6 @@ insert into public.payments (client_name, project_title, invoice_number, total_a
 values
 ('Maa Radio Mart', 'Advanced Electronics Catalog', 'INV-2026-001', 44999, 44999, '2026-08-15', 'UPI (Google Pay)', 'Paid'),
 ('Sharma Medicos', 'Pharmacy Web Platform', 'INV-2026-002', 18999, 15000, '2026-09-30', 'Bank Transfer (NEFT)', 'Partial'),
-('The Beauty Salon & Boutique', 'Luxury Salon Presence', 'INV-2026-003', 16999, 16999, '2026-09-10', 'UPI (PhonePe)', 'Paid'),
-('Style Hub Fashion', 'Modern Lookbook Site', 'INV-2026-004', 7999, 7999, '2026-07-28', 'UPI', 'Paid')
+('The Beauty Salon & Boutique', 'Luxury Salon Presence', 'INV-2026-003', 16999, 16999, '2026-09-10', 'UPI (PhonePe)', 'Paid')
 on conflict do nothing;
+

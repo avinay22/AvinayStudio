@@ -5,12 +5,12 @@ export interface Project {
   category: string;
   description: string;
   image_url: string;
-  live_url?: string;
+  live_url?: string | null;
   tags: string[];
-  results_metric?: string;
+  results_metric?: string | null;
   featured: boolean;
   order_index: number;
-  created_at?: string;
+  created_at?: string | null;
 }
 
 export interface Client {
@@ -18,18 +18,18 @@ export interface Client {
   business_name: string;
   contact_name: string;
   phone: string;
-  email?: string;
+  email?: string | null;
   location: string;
   package_selected: string;
-  status: 'Lead' | 'In Progress' | 'Active' | 'Completed';
+  status: 'Lead' | 'In Progress' | 'Active' | 'Completed' | string;
   total_billed: number;
-  notes?: string;
-  created_at?: string;
+  notes?: string | null;
+  created_at?: string | null;
 }
 
 export interface Payment {
   id: string;
-  client_id?: string;
+  client_id?: string | null;
   client_name: string;
   project_title: string;
   invoice_number: string;
@@ -37,8 +37,8 @@ export interface Payment {
   paid_amount: number;
   due_date: string;
   payment_method: string;
-  status: 'Paid' | 'Partial' | 'Pending';
-  created_at?: string;
+  status: 'Paid' | 'Partial' | 'Pending' | string;
+  created_at?: string | null;
 }
 
 export interface InvoiceItem {
@@ -52,16 +52,16 @@ export interface Invoice {
   id: string;
   invoice_number: string;
   client_name: string;
-  client_phone?: string;
-  client_email?: string;
-  client_address?: string;
+  client_phone?: string | null;
+  client_email?: string | null;
+  client_address?: string | null;
   issue_date: string;
   due_date: string;
   items: InvoiceItem[];
   subtotal: number;
   discount: number;
   total_amount: number;
-  status: 'Draft' | 'Issued' | 'Paid' | 'Cancelled';
-  notes?: string;
-  created_at?: string;
+  status: 'Draft' | 'Issued' | 'Paid' | 'Cancelled' | string;
+  notes?: string | null;
+  created_at?: string | null;
 }

@@ -40,6 +40,33 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     router.push('/admin/login');
   };
 
+  const [syncing, setSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<string | null>(null);
+
+  const handleManualSync = async () => {
+    setSyncing(true);
+    setSyncStatus('Syncing with Supabase...');
+    try {
+      const res = await fetch('/api/sync', { method: 'POST' });
+      const json = await res.json();
+      if (json.success) {
+        setSyncStatus('Synced to VS Code!');
+        setTimeout(() => setSyncStatus(null), 3000);
+      } else {
+        setSyncStatus('Sync failed');
+      }
+    } catch {
+      setSyncStatus('Error syncing');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  useEffect(() => {
+    // Automatically keep VS Code in sync whenever admin loads
+    fetch('/api/sync', { method: 'POST' }).catch(() => {});
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#070709] text-[#F5F2ED] flex flex-col md:flex-row">
       {/* Sidebar for Desktop */}
@@ -85,6 +112,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Bottom Actions */}
         <div className="space-y-2 pt-6 border-t border-[#D4C5B9]/10">
+          <button
+            onClick={handleManualSync}
+            disabled={syncing}
+            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs bg-[#16161E] border border-[#C5A880]/20 text-[#DFC08F] hover:border-[#C5A880]/60 transition-all font-medium"
+          >
+            <span>{syncStatus || (syncing ? 'Syncing...' : '⚡ Sync with VS Code')}</span>
+            <span className="w-2 h-2 rounded-full bg-[#DFC08F] animate-pulse" />
+          </button>
           <a
             href="/"
             target="_blank"

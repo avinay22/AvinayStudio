@@ -13,7 +13,7 @@ AvinayStudio is a bespoke, cinematic dark-themed agency portfolio platform engin
 - **Hero & About Visual Blending**: Ambient backlight halo, radial vignette, and custom responsive frame blending.
 - **Agency Showcase**:
   - Hero Section with high-conversion messaging
-  - Trust section highlighting regional commercial projects in Assam (Maa Radio Mart, Sharma Medicos, The Beauty Parlour, Style Hub)
+  - Trust section highlighting regional commercial projects in Assam (Maa Radio Mart, Sharma Medicos, The Beauty Parlour, Computer science)
   - 3 Core Services (Basic Website, Business Website, Advanced Online Store)
   - Founder Story & Direct Access
   - Portfolio Case Studies Gallery with live filters
