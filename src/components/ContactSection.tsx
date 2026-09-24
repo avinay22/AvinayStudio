@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Phone, Mail, MessageCircle, Send, CheckCircle2, Clock, MapPin } from 'lucide-react';
+import { Phone, Mail, MessageCircle, Send, CheckCircle2, Clock, MapPin, Sparkles } from 'lucide-react';
 import { saveClient } from '@/lib/agencyData';
+import ThreeDCard from './ThreeDCard';
 
 export default function ContactSection() {
   const [formData, setFormData] = useState({
@@ -28,7 +29,7 @@ export default function ContactSection() {
         phone: formData.phone,
         package_selected: formData.package,
         status: 'Lead',
-        notes: `Inquiry message: ${formData.message}`,
+        notes: `Website Inquiry: ${formData.message || 'Interested in ' + formData.package}`,
       });
       setSubmitted(true);
     } catch (err) {
@@ -39,17 +40,18 @@ export default function ContactSection() {
   };
 
   return (
-    <section id="contact" className="py-24 bg-[#08080A] border-t border-[#D4C5B9]/10 relative overflow-hidden">
-      {/* Background Ambience */}
-      <div className="absolute top-1/2 left-1/4 w-[450px] h-[450px] bg-[#C5A880]/10 rounded-full blur-[140px] pointer-events-none" />
+    <section id="contact" className="py-28 bg-[#07070A] border-t border-[#D4C5B9]/10 relative overflow-hidden">
+      {/* Background Soft Gold Ambience */}
+      <div className="absolute top-1/2 left-1/3 w-[500px] h-[500px] bg-[#C5A880]/8 rounded-full blur-[160px] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-6 sm:px-8">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
           
-          {/* Left Column: Contact Direct Information */}
+          {/* Left Column: Direct Founder Channels */}
           <div className="lg:col-span-5 flex flex-col justify-between">
             <div>
               <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#121216] border border-[#C5A880]/30 text-xs uppercase tracking-widest text-[#DFC08F] font-semibold mb-4">
+                <Sparkles className="w-3.5 h-3.5" />
                 Let’s Collaborate
               </div>
 
@@ -62,46 +64,50 @@ export default function ContactSection() {
                 Reach out directly to Avinay. Whether you need a brand-new website, an e-commerce catalogue, or a complete digital overhaul, we are ready to build it.
               </p>
 
-              {/* Strict Contact Details */}
+              {/* Contact Details with 3D Depth */}
               <div className="space-y-4 mb-8">
-                {/* Phone (Strict requirement: +91 7896554039) */}
-                <a
-                  href="tel:+917896554039"
-                  className="p-4 rounded-xl bg-[#0E0E12] border border-[#D4C5B9]/15 hover:border-[#C5A880]/50 transition-all flex items-center gap-4 group"
-                >
-                  <div className="w-12 h-12 rounded-lg bg-[#16161C] border border-[#C5A880]/30 flex items-center justify-center text-[#DFC08F] group-hover:bg-[#DFC08F] group-hover:text-[#050505] transition-all">
-                    <Phone className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="text-[11px] uppercase tracking-wider text-[#75716B] font-semibold">
-                      Direct Phone
+                {/* Phone */}
+                <ThreeDCard depth={6} glare={false}>
+                  <a
+                    href="tel:+917896554039"
+                    className="p-4 rounded-xl bg-[#0E0E13] border border-[#D4C5B9]/15 hover:border-[#C5A880]/50 transition-all flex items-center gap-4 group"
+                  >
+                    <div className="w-12 h-12 rounded-lg bg-[#16161C] border border-[#C5A880]/30 flex items-center justify-center text-[#DFC08F] group-hover:bg-[#DFC08F] group-hover:text-[#050505] transition-all">
+                      <Phone className="w-5 h-5" />
                     </div>
-                    <div className="text-base font-bold text-[#F5F2ED] font-mono group-hover:text-[#DFC08F] transition-colors">
-                      +91 7896554039
+                    <div>
+                      <div className="text-[11px] uppercase tracking-wider text-[#75716B] font-semibold">
+                        Direct Phone
+                      </div>
+                      <div className="text-base font-bold text-[#F5F2ED] font-mono group-hover:text-[#DFC08F] transition-colors">
+                        +91 7896554039
+                      </div>
                     </div>
-                  </div>
-                </a>
+                  </a>
+                </ThreeDCard>
 
-                {/* Email (Strict requirement: sharmaavinay0@gmail.com) */}
-                <a
-                  href="mailto:sharmaavinay0@gmail.com"
-                  className="p-4 rounded-xl bg-[#0E0E12] border border-[#D4C5B9]/15 hover:border-[#C5A880]/50 transition-all flex items-center gap-4 group"
-                >
-                  <div className="w-12 h-12 rounded-lg bg-[#16161C] border border-[#C5A880]/30 flex items-center justify-center text-[#DFC08F] group-hover:bg-[#DFC08F] group-hover:text-[#050505] transition-all">
-                    <Mail className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="text-[11px] uppercase tracking-wider text-[#75716B] font-semibold">
-                      Direct Email
+                {/* Email */}
+                <ThreeDCard depth={6} glare={false}>
+                  <a
+                    href="mailto:sharmaavinay0@gmail.com"
+                    className="p-4 rounded-xl bg-[#0E0E13] border border-[#D4C5B9]/15 hover:border-[#C5A880]/50 transition-all flex items-center gap-4 group"
+                  >
+                    <div className="w-12 h-12 rounded-lg bg-[#16161C] border border-[#C5A880]/30 flex items-center justify-center text-[#DFC08F] group-hover:bg-[#DFC08F] group-hover:text-[#050505] transition-all">
+                      <Mail className="w-5 h-5" />
                     </div>
-                    <div className="text-base font-bold text-[#F5F2ED] group-hover:text-[#DFC08F] transition-colors">
-                      sharmaavinay0@gmail.com
+                    <div>
+                      <div className="text-[11px] uppercase tracking-wider text-[#75716B] font-semibold">
+                        Direct Email
+                      </div>
+                      <div className="text-base font-bold text-[#F5F2ED] group-hover:text-[#DFC08F] transition-colors">
+                        sharmaavinay0@gmail.com
+                      </div>
                     </div>
-                  </div>
-                </a>
+                  </a>
+                </ThreeDCard>
 
                 {/* Location */}
-                <div className="p-4 rounded-xl bg-[#0E0E12] border border-[#D4C5B9]/15 flex items-center gap-4">
+                <div className="p-4 rounded-xl bg-[#0E0E13] border border-[#D4C5B9]/15 flex items-center gap-4">
                   <div className="w-12 h-12 rounded-lg bg-[#16161C] border border-[#C5A880]/30 flex items-center justify-center text-[#DFC08F]">
                     <MapPin className="w-5 h-5" />
                   </div>
@@ -116,141 +122,158 @@ export default function ContactSection() {
                 </div>
               </div>
 
-              {/* Strict WhatsApp CTA Button */}
+              {/* Direct WhatsApp CTA Button */}
               <a
                 href="https://wa.me/917896554039?text=Hi%20Avinay,%20I'd%20like%20to%20discuss%20a%20project%20with%20AvinayStudio."
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-4 px-6 rounded-xl text-xs font-bold uppercase tracking-wider text-[#050505] bg-[#DFC08F] hover:bg-[#E8DFD8] transition-all flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(223,192,143,0.3)] transform hover:-translate-y-0.5"
+                className="w-full py-4 px-6 rounded-xl text-xs font-bold uppercase tracking-wider text-[#050505] bg-[#DFC08F] hover:bg-[#E8DFD8] transition-all flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(223,192,143,0.35)] transform hover:-translate-y-1"
               >
                 <MessageCircle className="w-4 h-4" />
-                Chat on WhatsApp Now
+                Chat on WhatsApp (+91 7896554039)
               </a>
             </div>
 
-            {/* Quick Note */}
             <div className="mt-8 flex items-center gap-2 text-xs text-[#75716B]">
               <Clock className="w-3.5 h-3.5 text-[#DFC08F]" />
-              <span>We typically reply in 15–30 minutes during business hours.</span>
+              <span>Direct founder response in 15–30 minutes during business hours.</span>
             </div>
           </div>
 
-          {/* Right Column: Direct Fast Inquiry Form */}
+          {/* Right Column: 3D Form Card Linked to Supabase */}
           <div className="lg:col-span-7">
-            <div className="p-8 sm:p-10 rounded-2xl bg-[#0E0E13] border border-[#D4C5B9]/15 shadow-2xl">
-              <h3 className="text-2xl font-bold text-[#F5F2ED] mb-2 font-['Outfit']">
-                Send a Direct Project Inquiry
-              </h3>
-              <p className="text-xs text-[#B8B3AB] mb-8">
-                Fill this out and Avinay will personally review your business requirements and reply with a strategic proposal.
-              </p>
-
-              {submitted ? (
-                <div className="py-12 text-center space-y-4">
-                  <div className="w-16 h-16 rounded-full bg-[#181820] border-2 border-[#DFC08F] flex items-center justify-center mx-auto text-[#DFC08F]">
-                    <CheckCircle2 className="w-8 h-8" />
-                  </div>
-                  <h4 className="text-xl font-bold text-[#F5F2ED] font-['Outfit']">
-                    Inquiry Received Successfully!
-                  </h4>
-                  <p className="text-sm text-[#B8B3AB] max-w-md mx-auto">
-                    Thank you! Avinay will call or WhatsApp you shortly at <span className="text-[#DFC08F]">{formData.phone}</span>.
-                  </p>
-                  <button
-                    onClick={() => {
-                      setSubmitted(false);
-                      setFormData({ name: '', phone: '', business: '', package: 'Business Website', message: '' });
-                    }}
-                    className="text-xs text-[#DFC08F] underline hover:text-[#E8DFD8]"
-                  >
-                    Send another inquiry
-                  </button>
+            <ThreeDCard depth={8}>
+              <div className="p-8 sm:p-10 rounded-2xl bg-[#0E0E13] border border-[#D4C5B9]/20 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)]">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-2xl font-bold text-[#F5F2ED] font-['Outfit']">
+                    Send a Direct Project Inquiry
+                  </h3>
+                  <span className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded bg-[#16161C] text-[#DFC08F] border border-[#C5A880]/30">
+                    Direct to Avinay
+                  </span>
                 </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <div>
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8B3AB] mb-2">
-                        Your Full Name *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="e.g. Rajesh Sharma"
-                        className="w-full px-4 py-3 rounded-xl bg-[#14141A] border border-[#D4C5B9]/15 text-[#F5F2ED] placeholder-[#75716B] text-sm focus:outline-none focus:border-[#DFC08F] transition-colors"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8B3AB] mb-2">
-                        WhatsApp / Phone Number *
-                      </label>
-                      <input
-                        type="tel"
-                        required
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        placeholder="+91 98765 43210"
-                        className="w-full px-4 py-3 rounded-xl bg-[#14141A] border border-[#D4C5B9]/15 text-[#F5F2ED] placeholder-[#75716B] text-sm focus:outline-none focus:border-[#DFC08F] transition-colors"
-                      />
-                    </div>
-                  </div>
+                <p className="text-xs text-[#B8B3AB] mb-8">
+                  Your inquiry is saved directly to our secure Supabase CRM system for personal review.
+                </p>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <div>
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8B3AB] mb-2">
-                        Business or Brand Name
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.business}
-                        onChange={(e) => setFormData({ ...formData, business: e.target.value })}
-                        placeholder="e.g. Maa Radio / Sharma Medicos"
-                        className="w-full px-4 py-3 rounded-xl bg-[#14141A] border border-[#D4C5B9]/15 text-[#F5F2ED] placeholder-[#75716B] text-sm focus:outline-none focus:border-[#DFC08F] transition-colors"
-                      />
+                {submitted ? (
+                  <div className="py-12 text-center space-y-4">
+                    <div className="w-16 h-16 rounded-full bg-[#181820] border-2 border-[#DFC08F] flex items-center justify-center mx-auto text-[#DFC08F] shadow-[0_0_30px_rgba(223,192,143,0.25)]">
+                      <CheckCircle2 className="w-8 h-8" />
                     </div>
-                    <div>
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8B3AB] mb-2">
-                        Desired Package
-                      </label>
-                      <select
-                        value={formData.package}
-                        onChange={(e) => setFormData({ ...formData, package: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl bg-[#14141A] border border-[#D4C5B9]/15 text-[#F5F2ED] text-sm focus:outline-none focus:border-[#DFC08F] transition-colors"
+                    <h4 className="text-xl font-bold text-[#F5F2ED] font-['Outfit']">
+                      Inquiry Stored in Supabase!
+                    </h4>
+                    <p className="text-sm text-[#B8B3AB] max-w-md mx-auto">
+                      Thank you! Avinay has received your inquiry and will reach out to <span className="text-[#DFC08F] font-bold">{formData.phone}</span> shortly.
+                    </p>
+                    <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+                      <a
+                        href={`https://wa.me/917896554039?text=Hi%20Avinay,%20I%20just%20submitted%20an%20inquiry%20for%20${encodeURIComponent(formData.package)}.%20My%20name%20is%20${encodeURIComponent(formData.name)}.`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider text-[#050505] bg-[#DFC08F] hover:bg-[#E8DFD8] flex items-center gap-2"
                       >
-                        <option value="Basic Website (₹7,999)">Basic Website (₹7,999)</option>
-                        <option value="Business Website (₹14,999 – ₹19,999)">Business Website (₹14,999 – ₹19,999)</option>
-                        <option value="Advanced Online Store (₹39,999 – ₹49,999)">Advanced Online Store (₹39,999 – ₹49,999)</option>
-                        <option value="Custom Project Scope">Custom Project Scope</option>
-                      </select>
+                        <MessageCircle className="w-3.5 h-3.5" />
+                        Also Ping on WhatsApp
+                      </a>
+                      <button
+                        onClick={() => {
+                          setSubmitted(false);
+                          setFormData({ name: '', phone: '', business: '', package: 'Business Website', message: '' });
+                        }}
+                        className="text-xs text-[#B8B3AB] hover:text-[#DFC08F] underline"
+                      >
+                        Send another inquiry
+                      </button>
                     </div>
                   </div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8B3AB] mb-2">
+                          Your Full Name *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          placeholder="e.g. Rajesh Sharma"
+                          className="w-full px-4 py-3 rounded-xl bg-[#14141A] border border-[#D4C5B9]/15 text-[#F5F2ED] placeholder-[#75716B] text-sm focus:outline-none focus:border-[#DFC08F] transition-colors"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8B3AB] mb-2">
+                          WhatsApp / Phone Number *
+                        </label>
+                        <input
+                          type="tel"
+                          required
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          placeholder="+91 98765 43210"
+                          className="w-full px-4 py-3 rounded-xl bg-[#14141A] border border-[#D4C5B9]/15 text-[#F5F2ED] placeholder-[#75716B] text-sm focus:outline-none focus:border-[#DFC08F] transition-colors"
+                        />
+                      </div>
+                    </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8B3AB] mb-2">
-                      Tell us about your goals & requirements
-                    </label>
-                    <textarea
-                      rows={4}
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      placeholder="Briefly describe what your business sells, your current setup, or any reference websites you like..."
-                      className="w-full px-4 py-3 rounded-xl bg-[#14141A] border border-[#D4C5B9]/15 text-[#F5F2ED] placeholder-[#75716B] text-sm focus:outline-none focus:border-[#DFC08F] transition-colors"
-                    />
-                  </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8B3AB] mb-2">
+                          Business or Brand Name
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.business}
+                          onChange={(e) => setFormData({ ...formData, business: e.target.value })}
+                          placeholder="e.g. Maa Radio / Sharma Medicos"
+                          className="w-full px-4 py-3 rounded-xl bg-[#14141A] border border-[#D4C5B9]/15 text-[#F5F2ED] placeholder-[#75716B] text-sm focus:outline-none focus:border-[#DFC08F] transition-colors"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8B3AB] mb-2">
+                          Desired Package
+                        </label>
+                        <select
+                          value={formData.package}
+                          onChange={(e) => setFormData({ ...formData, package: e.target.value })}
+                          className="w-full px-4 py-3 rounded-xl bg-[#14141A] border border-[#D4C5B9]/15 text-[#F5F2ED] text-sm focus:outline-none focus:border-[#DFC08F] transition-colors"
+                        >
+                          <option value="Basic Website (₹7,999)">Basic Website (₹7,999)</option>
+                          <option value="Business Website (₹14,999 – ₹19,999)">Business Website (₹14,999 – ₹19,999)</option>
+                          <option value="Advanced Online Store (₹39,999 – ₹49,999)">Advanced Online Store (₹39,999 – ₹49,999)</option>
+                          <option value="Custom Web Platform Scope">Custom Web Platform Scope</option>
+                        </select>
+                      </div>
+                    </div>
 
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="w-full py-4 rounded-xl text-xs font-bold uppercase tracking-wider text-[#050505] bg-[#DFC08F] hover:bg-[#E8DFD8] transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
-                  >
-                    {submitting ? 'Sending Request...' : 'Submit Project Inquiry'}
-                    <Send className="w-3.5 h-3.5" />
-                  </button>
-                </form>
-              )}
-            </div>
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8B3AB] mb-2">
+                        Tell us about your goals & requirements
+                      </label>
+                      <textarea
+                        rows={4}
+                        value={formData.message}
+                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                        placeholder="Briefly describe what your business sells, your current setup, or any reference websites you like..."
+                        className="w-full px-4 py-3 rounded-xl bg-[#14141A] border border-[#D4C5B9]/15 text-[#F5F2ED] placeholder-[#75716B] text-sm focus:outline-none focus:border-[#DFC08F] transition-colors"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="w-full py-4 rounded-xl text-xs font-bold uppercase tracking-wider text-[#050505] bg-[#DFC08F] hover:bg-[#E8DFD8] transition-all flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(223,192,143,0.3)] disabled:opacity-50"
+                    >
+                      {submitting ? 'Submitting to Supabase...' : 'Submit Project Inquiry'}
+                      <Send className="w-3.5 h-3.5" />
+                    </button>
+                  </form>
+                )}
+              </div>
+            </ThreeDCard>
           </div>
 
         </div>

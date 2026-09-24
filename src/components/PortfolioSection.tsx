@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ExternalLink, Sparkles, FolderGit2, CheckCircle2 } from 'lucide-react';
+import { ExternalLink, Sparkles, FolderGit2 } from 'lucide-react';
 import { Project } from '@/types';
 import { fetchProjects } from '@/lib/agencyData';
+import ThreeDCard from './ThreeDCard';
 
 export default function PortfolioSection() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -28,7 +29,10 @@ export default function PortfolioSection() {
     : projects.filter(p => p.category.toLowerCase().includes(selectedCategory.toLowerCase()) || (p.tags && p.tags.some(t => t.toLowerCase().includes(selectedCategory.toLowerCase()))));
 
   return (
-    <section id="portfolio" className="py-24 relative overflow-hidden">
+    <section id="portfolio" className="py-28 relative overflow-hidden">
+      {/* Background Ambience */}
+      <div className="absolute top-1/3 right-10 w-96 h-96 bg-[#C5A880]/5 rounded-full blur-[150px] pointer-events-none" />
+
       <div className="max-w-7xl mx-auto px-6 sm:px-8">
         
         {/* Header */}
@@ -43,7 +47,7 @@ export default function PortfolioSection() {
             </h2>
           </div>
           <p className="text-sm text-[#B8B3AB] max-w-md">
-            Every build is optimized for fast user conversion, seamless mobile viewing, and commanding authority in the local market.
+            Every build is engineered for high client conversion, responsive mobile viewing, and commanding authority in the market.
           </p>
         </div>
 
@@ -55,7 +59,7 @@ export default function PortfolioSection() {
               onClick={() => setSelectedCategory(cat)}
               className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all ${
                 selectedCategory === cat
-                  ? 'bg-[#DFC08F] text-[#050505] shadow-lg shadow-[#DFC08F]/20'
+                  ? 'bg-[#DFC08F] text-[#050505] shadow-lg shadow-[#DFC08F]/25 scale-105'
                   : 'bg-[#121216] text-[#B8B3AB] hover:text-[#F5F2ED] border border-[#D4C5B9]/10'
               }`}
             >
@@ -64,96 +68,99 @@ export default function PortfolioSection() {
           ))}
         </div>
 
-        {/* Projects Grid */}
+        {/* 3D Projects Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <AnimatePresence mode="popLayout">
             {filteredProjects.map((project, idx) => (
               <motion.div
                 key={project.id}
                 layout
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 25 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.4, delay: idx * 0.08 }}
-                className="group rounded-2xl bg-[#0D0D11] border border-[#D4C5B9]/15 hover:border-[#C5A880]/45 overflow-hidden transition-all duration-300 flex flex-col justify-between shadow-xl"
               >
-                <div>
-                  {/* Image Display Frame */}
-                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#050507]">
-                    <Image
-                      src={project.image_url || '/images/hero-laptop.jpg'}
-                      alt={project.title}
-                      fill
-                      className="object-cover object-top group-hover:scale-105 transition-transform duration-700 filter contrast-[1.03]"
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D11] via-transparent to-transparent opacity-90" />
+                <ThreeDCard depth={8} className="h-full">
+                  <div className="group rounded-2xl bg-[#0D0D11] border border-[#D4C5B9]/15 hover:border-[#C5A880]/45 overflow-hidden transition-all duration-300 flex flex-col justify-between h-full shadow-2xl">
+                    <div>
+                      {/* Image Display Frame with 3D Depth */}
+                      <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#050507] [transform:translateZ(20px)]">
+                        <Image
+                          src={project.image_url || '/images/hero-laptop.jpg'}
+                          alt={project.title}
+                          fill
+                          className="object-cover object-top group-hover:scale-105 transition-transform duration-700 filter contrast-[1.03]"
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D11] via-transparent to-transparent opacity-90" />
 
-                    {/* Results Metric Badge */}
-                    {project.results_metric && (
-                      <div className="absolute top-4 left-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#050505]/90 border border-[#C5A880]/40 backdrop-blur-md text-[11px] font-bold text-[#DFC08F] shadow-lg">
-                        <Sparkles className="w-3 h-3" />
-                        {project.results_metric}
+                        {/* Results Metric Badge */}
+                        {project.results_metric && (
+                          <div className="absolute top-4 left-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#050505]/90 border border-[#C5A880]/40 backdrop-blur-md text-[11px] font-bold text-[#DFC08F] shadow-lg [transform:translateZ(40px)]">
+                            <Sparkles className="w-3 h-3" />
+                            {project.results_metric}
+                          </div>
+                        )}
+
+                        {/* Category Tag */}
+                        <div className="absolute top-4 right-4 px-3 py-1 rounded-md bg-[#16161C]/90 text-[10px] uppercase font-bold tracking-wider text-[#E8DFD8] border border-[#D4C5B9]/15 [transform:translateZ(40px)]">
+                          {project.category}
+                        </div>
                       </div>
-                    )}
 
-                    {/* Category Tag */}
-                    <div className="absolute top-4 right-4 px-3 py-1 rounded-md bg-[#16161C]/90 text-[10px] uppercase font-bold tracking-wider text-[#E8DFD8] border border-[#D4C5B9]/15">
-                      {project.category}
+                      {/* Body Content */}
+                      <div className="p-6 sm:p-8 [transform:translateZ(30px)]">
+                        <div className="text-xs uppercase tracking-widest text-[#DFC08F] font-semibold mb-2">
+                          {project.client_name}
+                        </div>
+                        <h3 className="text-2xl font-bold text-[#F5F2ED] group-hover:text-[#DFC08F] transition-colors mb-3 font-['Outfit']">
+                          {project.title}
+                        </h3>
+                        <p className="text-sm text-[#B8B3AB] leading-relaxed mb-6">
+                          {project.description}
+                        </p>
+
+                        {/* Tags */}
+                        <div className="flex flex-wrap gap-2">
+                          {project.tags?.map((tag, i) => (
+                            <span
+                              key={i}
+                              className="text-[11px] font-medium px-2.5 py-1 rounded bg-[#15151B] text-[#D4C5B9] border border-[#D4C5B9]/10"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Body Content */}
-                  <div className="p-6 sm:p-8">
-                    <div className="text-xs uppercase tracking-widest text-[#DFC08F] font-semibold mb-2">
-                      {project.client_name}
-                    </div>
-                    <h3 className="text-2xl font-bold text-[#F5F2ED] group-hover:text-[#DFC08F] transition-colors mb-3 font-['Outfit']">
-                      {project.title}
-                    </h3>
-                    <p className="text-sm text-[#B8B3AB] leading-relaxed mb-6">
-                      {project.description}
-                    </p>
-
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-2">
-                      {project.tags?.map((tag, i) => (
-                        <span
-                          key={i}
-                          className="text-[11px] font-medium px-2.5 py-1 rounded bg-[#15151B] text-[#D4C5B9] border border-[#D4C5B9]/10"
+                    {/* Footer Action */}
+                    <div className="px-6 sm:px-8 pb-6 pt-3 border-t border-[#D4C5B9]/10 flex items-center justify-between [transform:translateZ(25px)]">
+                      <span className="text-xs text-[#75716B]">Engineered by AvinayStudio</span>
+                      {project.live_url && project.live_url !== '#' ? (
+                        <a
+                          href={project.live_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#DFC08F] hover:text-[#E8DFD8] transition-colors"
                         >
-                          {tag}
-                        </span>
-                      ))}
+                          Visit Live System
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      ) : (
+                        <a
+                          href="https://wa.me/917896554039?text=Hi%20Avinay,%20I'd%20like%20to%20see%20more%20details%20about%20your%20portfolio."
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#DFC08F] hover:text-[#E8DFD8] transition-colors"
+                        >
+                          Request Walkthrough
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      )}
                     </div>
                   </div>
-                </div>
-
-                {/* Footer Action */}
-                <div className="px-6 sm:px-8 pb-6 pt-2 border-t border-[#D4C5B9]/10 flex items-center justify-between">
-                  <span className="text-xs text-[#75716B]">Engineered by AvinayStudio</span>
-                  {project.live_url && project.live_url !== '#' ? (
-                    <a
-                      href={project.live_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#DFC08F] hover:text-[#E8DFD8] transition-colors"
-                    >
-                      Visit Live System
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  ) : (
-                    <a
-                      href="https://wa.me/917896554039?text=Hi%20Avinay,%20I'd%20like%20to%20see%20more%20details%20about%20your%20portfolio."
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#DFC08F] hover:text-[#E8DFD8] transition-colors"
-                    >
-                      Request Case Walkthrough
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  )}
-                </div>
+                </ThreeDCard>
               </motion.div>
             ))}
           </AnimatePresence>
