@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 
 interface ThreeDCardProps {
@@ -18,6 +18,15 @@ export default function ThreeDCard({
 }: ThreeDCardProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    // Detect mobile touch devices to prevent touch stutter
+    if (typeof window !== 'undefined') {
+      const isTouch = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768;
+      setIsTouchDevice(isTouch);
+    }
+  }, []);
 
   // Mouse normalized coordinates [-0.5 to 0.5]
   const x = useMotionValue(0);
@@ -34,7 +43,7 @@ export default function ThreeDCard({
   const [glarePos, setGlarePos] = useState({ x: 50, y: 50 });
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!ref.current) return;
+    if (isTouchDevice || !ref.current) return;
     const rect = ref.current.getBoundingClientRect();
     const width = rect.width;
     const height = rect.height;
@@ -55,7 +64,7 @@ export default function ThreeDCard({
   };
 
   const handleMouseEnter = () => {
-    setIsHovered(true);
+    if (!isTouchDevice) setIsHovered(true);
   };
 
   const handleMouseLeave = () => {
@@ -63,6 +72,11 @@ export default function ThreeDCard({
     x.set(0);
     y.set(0);
   };
+
+  // If touch device (phone/tablet), render without heavy 3D perspective to preserve native touch scrolling
+  if (isTouchDevice) {
+    return <div className={`relative w-full ${className}`}>{children}</div>;
+  }
 
   return (
     <div

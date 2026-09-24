@@ -1,5 +1,12 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: '#050505',
+};
 
 export const metadata: Metadata = {
   title: 'AvinayStudio | We Build Digital Presence That Brings Customers',
@@ -28,7 +35,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark scroll-smooth">
+    <html lang="en" className="dark scroll-smooth overflow-x-hidden">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -37,7 +44,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="bg-[#050505] text-[#F5F2ED] antialiased selection:bg-[#C5A880] selection:text-[#050505] min-h-screen">
+      <body className="bg-[#050505] text-[#F5F2ED] antialiased selection:bg-[#C5A880] selection:text-[#050505] min-h-screen overflow-x-hidden max-w-[100vw]">
         {children}
       </body>
     </html>

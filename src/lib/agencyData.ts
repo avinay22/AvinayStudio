@@ -2,34 +2,10 @@ import { supabase, isSupabaseConfigured } from './supabase';
 import { Project, Client, Payment, Invoice } from '@/types';
 import { INITIAL_PROJECTS, INITIAL_CLIENTS, INITIAL_PAYMENTS, INITIAL_INVOICES } from '@/data/initialData';
 
-const LOCAL_STORAGE_KEYS = {
-  PROJECTS: 'avinay_studio_projects',
-  CLIENTS: 'avinay_studio_clients',
-  PAYMENTS: 'avinay_studio_payments',
-  INVOICES: 'avinay_studio_invoices',
-};
-
 // Check if string is a valid UUID
 function isValidUUID(str?: string): boolean {
   if (!str) return false;
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
-}
-
-function getLocal<T>(key: string, fallback: T): T {
-  if (typeof window === 'undefined') return fallback;
-  try {
-    const item = localStorage.getItem(key);
-    return item ? JSON.parse(item) : fallback;
-  } catch (e) {
-    return fallback;
-  }
-}
-
-function setLocal<T>(key: string, val: T): void {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(key, JSON.stringify(val));
-  } catch (e) {}
 }
 
 // ----------------- IMAGE UPLOADER -----------------
@@ -54,8 +30,6 @@ export async function uploadProjectImage(file: File): Promise<string> {
         if (urlData?.publicUrl) {
           return urlData.publicUrl;
         }
-      } else if (error) {
-        console.warn('Supabase storage upload returned error (fallback to local Data URL):', error.message);
       }
     } catch (err) {
       console.warn('Storage upload error, using local Data URL fallback:', err);
@@ -79,15 +53,17 @@ export async function fetchProjects(): Promise<Project[]> {
         .from('projects')
         .select('*')
         .order('order_index', { ascending: true });
-      if (!error && data && data.length > 0) {
-        setLocal(LOCAL_STORAGE_KEYS.PROJECTS, data);
+
+      if (error) {
+        console.error('Supabase fetch projects error:', error.message);
+      } else if (data && data.length > 0) {
         return data as Project[];
       }
     } catch (err) {
-      console.warn('Supabase fetch projects error:', err);
+      console.error('Supabase query error:', err);
     }
   }
-  return getLocal<Project[]>(LOCAL_STORAGE_KEYS.PROJECTS, INITIAL_PROJECTS);
+  return INITIAL_PROJECTS;
 }
 
 export async function saveProject(project: Partial<Project> & { id?: string }): Promise<Project> {
@@ -110,62 +86,47 @@ export async function saveProject(project: Partial<Project> & { id?: string }): 
     payload.id = project.id;
   }
 
-  let savedProject: Project = {
-    ...payload,
-    id: project.id || `proj-${Date.now()}`,
-    created_at: new Date().toISOString(),
-  };
-
   if (isSupabaseConfigured) {
-    try {
-      if (isExistingUUID) {
-        const { data, error } = await supabase
-          .from('projects')
-          .update(payload)
-          .eq('id', project.id)
-          .select()
-          .single();
-        if (!error && data) savedProject = data as Project;
-        else if (error) console.error('Supabase project update error:', error);
-      } else {
-        const { data, error } = await supabase
-          .from('projects')
-          .insert(payload)
-          .select()
-          .single();
-        if (!error && data) savedProject = data as Project;
-        else if (error) console.error('Supabase project insert error:', error);
+    if (isExistingUUID) {
+      const { data, error } = await supabase
+        .from('projects')
+        .update(payload)
+        .eq('id', project.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Supabase project update error:', error.message);
+        throw new Error(`Supabase error: ${error.message}`);
       }
-    } catch (err) {
-      console.warn('Supabase save project error:', err);
+      return data as Project;
+    } else {
+      const { data, error } = await supabase
+        .from('projects')
+        .insert(payload)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Supabase project insert error:', error.message);
+        throw new Error(`Supabase error: ${error.message}`);
+      }
+      return data as Project;
     }
   }
 
-  // Update local storage cache
-  const current = getLocal<Project[]>(LOCAL_STORAGE_KEYS.PROJECTS, INITIAL_PROJECTS);
-  const exists = current.findIndex(p => p.id === savedProject.id || (project.id && p.id === project.id));
-  let updated: Project[];
-  if (exists >= 0) {
-    updated = current.map(p => (p.id === current[exists].id ? savedProject : p));
-  } else {
-    updated = [savedProject, ...current];
-  }
-  setLocal(LOCAL_STORAGE_KEYS.PROJECTS, updated);
-  return savedProject;
+  throw new Error('Supabase is not configured. Please check your .env.local file.');
 }
 
 export async function deleteProject(id: string): Promise<boolean> {
   if (isSupabaseConfigured && isValidUUID(id)) {
-    try {
-      const { error } = await supabase.from('projects').delete().eq('id', id);
-      if (error) console.error('Supabase delete error:', error);
-    } catch (err) {
-      console.warn('Supabase delete error:', err);
+    const { error } = await supabase.from('projects').delete().eq('id', id);
+    if (error) {
+      console.error('Supabase delete error:', error.message);
+      throw new Error(`Supabase delete error: ${error.message}`);
     }
+    return true;
   }
-  const current = getLocal<Project[]>(LOCAL_STORAGE_KEYS.PROJECTS, INITIAL_PROJECTS);
-  const updated = current.filter(p => p.id !== id);
-  setLocal(LOCAL_STORAGE_KEYS.PROJECTS, updated);
   return true;
 }
 
@@ -177,15 +138,17 @@ export async function fetchClients(): Promise<Client[]> {
         .from('clients')
         .select('*')
         .order('created_at', { ascending: false });
-      if (!error && data && data.length > 0) {
-        setLocal(LOCAL_STORAGE_KEYS.CLIENTS, data);
+
+      if (error) {
+        console.error('Supabase clients fetch error:', error.message);
+      } else if (data && data.length > 0) {
         return data as Client[];
       }
     } catch (err) {
-      console.warn('Supabase clients error:', err);
+      console.error('Supabase clients error:', err);
     }
   }
-  return getLocal<Client[]>(LOCAL_STORAGE_KEYS.CLIENTS, INITIAL_CLIENTS);
+  return INITIAL_CLIENTS;
 }
 
 export async function saveClient(client: Partial<Client> & { id?: string }): Promise<Client> {
@@ -207,42 +170,36 @@ export async function saveClient(client: Partial<Client> & { id?: string }): Pro
     payload.id = client.id;
   }
 
-  let savedClient: Client = {
-    ...payload,
-    id: client.id || `cli-${Date.now()}`,
-    created_at: new Date().toISOString(),
-  };
-
   if (isSupabaseConfigured) {
-    try {
-      if (isExistingUUID) {
-        const { data, error } = await supabase
-          .from('clients')
-          .update(payload)
-          .eq('id', client.id)
-          .select()
-          .single();
-        if (!error && data) savedClient = data as Client;
-        else if (error) console.error('Supabase client update error:', error);
-      } else {
-        const { data, error } = await supabase
-          .from('clients')
-          .insert(payload)
-          .select()
-          .single();
-        if (!error && data) savedClient = data as Client;
-        else if (error) console.error('Supabase client insert error:', error);
+    if (isExistingUUID) {
+      const { data, error } = await supabase
+        .from('clients')
+        .update(payload)
+        .eq('id', client.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Supabase client update error:', error.message);
+        throw new Error(`Supabase error: ${error.message}`);
       }
-    } catch (err) {
-      console.warn('Supabase client save error:', err);
+      return data as Client;
+    } else {
+      const { data, error } = await supabase
+        .from('clients')
+        .insert(payload)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Supabase client insert error:', error.message);
+        throw new Error(`Supabase error: ${error.message}`);
+      }
+      return data as Client;
     }
   }
 
-  const current = getLocal<Client[]>(LOCAL_STORAGE_KEYS.CLIENTS, INITIAL_CLIENTS);
-  const exists = current.findIndex(c => c.id === savedClient.id || (client.id && c.id === client.id));
-  const updated = exists >= 0 ? current.map(c => (c.id === current[exists].id ? savedClient : c)) : [savedClient, ...current];
-  setLocal(LOCAL_STORAGE_KEYS.CLIENTS, updated);
-  return savedClient;
+  throw new Error('Supabase is not configured.');
 }
 
 // ----------------- PAYMENTS -----------------
@@ -253,15 +210,17 @@ export async function fetchPayments(): Promise<Payment[]> {
         .from('payments')
         .select('*')
         .order('created_at', { ascending: false });
-      if (!error && data && data.length > 0) {
-        setLocal(LOCAL_STORAGE_KEYS.PAYMENTS, data);
+
+      if (error) {
+        console.error('Supabase payments fetch error:', error.message);
+      } else if (data && data.length > 0) {
         return data as Payment[];
       }
     } catch (err) {
-      console.warn('Supabase payments error:', err);
+      console.error('Supabase payments error:', err);
     }
   }
-  return getLocal<Payment[]>(LOCAL_STORAGE_KEYS.PAYMENTS, INITIAL_PAYMENTS);
+  return INITIAL_PAYMENTS;
 }
 
 export async function savePayment(payment: Partial<Payment> & { id?: string }): Promise<Payment> {
@@ -282,42 +241,36 @@ export async function savePayment(payment: Partial<Payment> & { id?: string }): 
     payload.id = payment.id;
   }
 
-  let savedPayment: Payment = {
-    ...payload,
-    id: payment.id || `pay-${Date.now()}`,
-    created_at: new Date().toISOString(),
-  };
-
   if (isSupabaseConfigured) {
-    try {
-      if (isExistingUUID) {
-        const { data, error } = await supabase
-          .from('payments')
-          .update(payload)
-          .eq('id', payment.id)
-          .select()
-          .single();
-        if (!error && data) savedPayment = data as Payment;
-        else if (error) console.error('Supabase payment update error:', error);
-      } else {
-        const { data, error } = await supabase
-          .from('payments')
-          .insert(payload)
-          .select()
-          .single();
-        if (!error && data) savedPayment = data as Payment;
-        else if (error) console.error('Supabase payment insert error:', error);
+    if (isExistingUUID) {
+      const { data, error } = await supabase
+        .from('payments')
+        .update(payload)
+        .eq('id', payment.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Supabase payment update error:', error.message);
+        throw new Error(`Supabase error: ${error.message}`);
       }
-    } catch (err) {
-      console.warn('Supabase payment save error:', err);
+      return data as Payment;
+    } else {
+      const { data, error } = await supabase
+        .from('payments')
+        .insert(payload)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Supabase payment insert error:', error.message);
+        throw new Error(`Supabase error: ${error.message}`);
+      }
+      return data as Payment;
     }
   }
 
-  const current = getLocal<Payment[]>(LOCAL_STORAGE_KEYS.PAYMENTS, INITIAL_PAYMENTS);
-  const exists = current.findIndex(p => p.id === savedPayment.id || (payment.id && p.id === payment.id));
-  const updated = exists >= 0 ? current.map(p => (p.id === current[exists].id ? savedPayment : p)) : [savedPayment, ...current];
-  setLocal(LOCAL_STORAGE_KEYS.PAYMENTS, updated);
-  return savedPayment;
+  throw new Error('Supabase is not configured.');
 }
 
 // ----------------- INVOICES -----------------
@@ -328,15 +281,17 @@ export async function fetchInvoices(): Promise<Invoice[]> {
         .from('invoices')
         .select('*')
         .order('created_at', { ascending: false });
-      if (!error && data && data.length > 0) {
-        setLocal(LOCAL_STORAGE_KEYS.INVOICES, data);
+
+      if (error) {
+        console.error('Supabase invoices fetch error:', error.message);
+      } else if (data && data.length > 0) {
         return data as Invoice[];
       }
     } catch (err) {
-      console.warn('Supabase invoices error:', err);
+      console.error('Supabase invoices error:', err);
     }
   }
-  return getLocal<Invoice[]>(LOCAL_STORAGE_KEYS.INVOICES, INITIAL_INVOICES);
+  return INITIAL_INVOICES;
 }
 
 export async function saveInvoice(invoice: Partial<Invoice> & { id?: string }): Promise<Invoice> {
@@ -362,40 +317,34 @@ export async function saveInvoice(invoice: Partial<Invoice> & { id?: string }): 
     payload.id = invoice.id;
   }
 
-  let savedInvoice: Invoice = {
-    ...payload,
-    id: invoice.id || `inv-${Date.now()}`,
-    created_at: new Date().toISOString(),
-  };
-
   if (isSupabaseConfigured) {
-    try {
-      if (isExistingUUID) {
-        const { data, error } = await supabase
-          .from('invoices')
-          .update(payload)
-          .eq('id', invoice.id)
-          .select()
-          .single();
-        if (!error && data) savedInvoice = data as Invoice;
-        else if (error) console.error('Supabase invoice update error:', error);
-      } else {
-        const { data, error } = await supabase
-          .from('invoices')
-          .insert(payload)
-          .select()
-          .single();
-        if (!error && data) savedInvoice = data as Invoice;
-        else if (error) console.error('Supabase invoice insert error:', error);
+    if (isExistingUUID) {
+      const { data, error } = await supabase
+        .from('invoices')
+        .update(payload)
+        .eq('id', invoice.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Supabase invoice update error:', error.message);
+        throw new Error(`Supabase error: ${error.message}`);
       }
-    } catch (err) {
-      console.warn('Supabase invoice save error:', err);
+      return data as Invoice;
+    } else {
+      const { data, error } = await supabase
+        .from('invoices')
+        .insert(payload)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Supabase invoice insert error:', error.message);
+        throw new Error(`Supabase error: ${error.message}`);
+      }
+      return data as Invoice;
     }
   }
 
-  const current = getLocal<Invoice[]>(LOCAL_STORAGE_KEYS.INVOICES, INITIAL_INVOICES);
-  const exists = current.findIndex(i => i.id === savedInvoice.id || (invoice.id && i.id === invoice.id));
-  const updated = exists >= 0 ? current.map(i => (i.id === current[exists].id ? savedInvoice : i)) : [savedInvoice, ...current];
-  setLocal(LOCAL_STORAGE_KEYS.INVOICES, updated);
-  return savedInvoice;
+  throw new Error('Supabase is not configured.');
 }
